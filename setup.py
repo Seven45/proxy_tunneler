@@ -1,15 +1,17 @@
 from os.path import join, dirname
 
+from pip._internal.network.session import PipSession
+from pip._internal.req import parse_requirements
 from setuptools import setup, find_packages
 
 long_description = open(join(dirname(__file__), 'README.rst'), 'r').read()
 
-install_requires = open((join(dirname(__file__), 'requirements.txt')), 'r').readlines()
-install_requires = list(map(lambda line: line.replace('\n', ''), install_requires))
+requirements = parse_requirements('requirements.txt', session=PipSession())
+install_requires = [str(req.req) for req in requirements]
 
 
 setup(name='ProxyTunneller',
-      version='0.2.0',
+      version='0.2.1',
       url='https://github.com/Seven45/ProxyTunneller',
       author='Dubrovin Semyon',
       author_email='seven45@mail.ru',
