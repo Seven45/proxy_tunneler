@@ -36,7 +36,7 @@ Create proxy tunnel
         inner_proxy = Proxy('http', '104.28.10.155', 80)
         outer_proxy = Proxy('socks5', '5.9.143.59', 3128)
         tunnel = Tunnel(inner_proxy, outer_proxy)
-        await tunnel.build
+        await tunnel.build()
         print(tunnel.url)
 
     if __name__ == '__main__':
