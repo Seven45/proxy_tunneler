@@ -5,12 +5,12 @@ ProxyTuneller
 
 .. |made-with-python| image:: https://img.shields.io/badge/Made%20with-Python-1f425f.svg
    :target: https://www.python.org/
-.. |PyPI-version| image:: https://badge.fury.io/py/pproxy.svg
-   :target: https://pypi.python.org/pypi/pproxy/
-.. |Hit-Count| image:: http://hits.dwyl.io/qwj/python-proxy.svg
-   :target: https://pypi.python.org/pypi/pproxy/
-.. |Downloads| image:: https://pepy.tech/badge/pproxy
-   :target: https://pepy.tech/project/pproxy
+.. |PyPI-version| image:: https://badge.fury.io/py/ProxyTunneller.svg
+   :target: https://pypi.python.org/pypi/ProxyTunneller/
+.. |Hit-Count| image:: http://hits.dwyl.io/Seven45/ProxyTunneller.svg
+   :target: https://pypi.python.org/pypi/ProxyTunneller/
+.. |Downloads| image:: https://pepy.tech/badge/ProxyTunneller
+   :target: https://pepy.tech/project/ProxyTunneller
 
 Library for create/generation proxy tunnels.
 
