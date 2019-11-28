@@ -1,7 +1,9 @@
 import asyncio
 import random
 from asyncio import Queue
-from typing import List
+from typing import List, Callable
+
+import pproxy
 
 from ProxyTunneller import Proxy, Tunnel
 
@@ -18,13 +20,13 @@ class TunnelGenerator:
         self.__outer_proxy_pool = outer_proxy_pool
         self.queue = queue
 
-    def run(self):
-        asyncio.create_task(self._start())
+    def run(self, traffic_writer: Callable = pproxy.server.DUMMY):
+        asyncio.create_task(self._start(traffic_writer))
 
-    async def _start(self):
+    async def _start(self, verbose_func: Callable):
         for outer_proxy in self.__outer_proxy_pool:
             inner_proxy = random.choice(self.__inner_proxy_pool)
-            tunnel = Tunnel(inner_proxy, outer_proxy)
+            tunnel = Tunnel(inner_proxy, outer_proxy, verbose_func=verbose_func)
             await tunnel.build(self.tunnels_lifetime)
             if self.allow_only_invisible_tunnels:
                 tunnel_is_correct: bool = await tunnel.is_invisible()

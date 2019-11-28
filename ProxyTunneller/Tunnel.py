@@ -1,6 +1,6 @@
 import asyncio
-import socket
 from datetime import datetime, timedelta
+from typing import Callable
 
 import pproxy
 from aiohttp import ClientSession, ClientError, ServerConnectionError
@@ -18,12 +18,17 @@ class Tunnel:
     outer_proxy: Proxy
     server: asyncio.AbstractServer
 
-    def __init__(self, inner_proxy: Proxy, outer_proxy: Proxy, port: int = None):
+    def __init__(self,
+                 inner_proxy: Proxy,
+                 outer_proxy: Proxy,
+                 port: int = None,
+                 verbose_func: Callable = pproxy.server.DUMMY):
         if port is None:
             port = utils.get_ephemeral_port()
         self.port = port
         self.inner_proxy = inner_proxy
         self.outer_proxy = outer_proxy
+        self.verbose_func = verbose_func
 
     def __str__(self) -> str:
         return self.route_info
@@ -32,16 +37,12 @@ class Tunnel:
         asyncio.create_task(self.destroy())
 
     @property
-    def host(self) -> str:
-        return socket.gethostname()
-
-    @property
     def url(self) -> str:
         return f'http://localhost:{self.port}'
 
     @property
     def route_info(self) -> str:
-        return f'{self.host}:{self.port} -> {self.inner_proxy} -> {self.outer_proxy}'
+        return f'{self.url} -> {self.inner_proxy} -> {self.outer_proxy}'
 
     @property
     async def ping(self) -> int:
@@ -77,7 +78,8 @@ class Tunnel:
         server = pproxy.Server(f'http+socks4+socks5://0.0.0.0:{self.port}')
         connection = pproxy.Connection(f'{self.inner_proxy.url}__{self.outer_proxy.url}')
         try:
-            self.server = await server.start_server({'rserver': [connection]})
+            self.server = await server.start_server({'rserver': [connection],
+                                                     'verbose': self.verbose_func})
         except OSError:
             self.port = utils.get_ephemeral_port()
             await self.build(lifetime)

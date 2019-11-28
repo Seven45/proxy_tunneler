@@ -68,7 +68,7 @@ Generate tunnels from proxy-pool
         generator.allow_only_invisible_tunnels = False
         # close each tunnel in 20 minutes after opening (0 - not close)
         generator.tunnels_lifetime = 20*60
-        generator.run()
+        generator.run(traffic_writer=print) #  or any func for writing traffic
         while True:
             try:
                 tunnel = await asyncio.wait_for(queue.get(), 60)
