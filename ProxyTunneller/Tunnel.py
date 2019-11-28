@@ -1,5 +1,5 @@
 import asyncio
-from asyncio import TimeoutError
+import socket
 from datetime import datetime, timedelta
 
 import pproxy
@@ -26,18 +26,22 @@ class Tunnel:
         self.outer_proxy = outer_proxy
 
     def __str__(self) -> str:
-        return f'localhost:{self.port} -> {self.inner_proxy} -> {self.outer_proxy}'
+        return self.route_info
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         asyncio.create_task(self.destroy())
+
+    @property
+    def host(self) -> str:
+        return socket.gethostname()
 
     @property
     def url(self) -> str:
         return f'http://localhost:{self.port}'
 
     @property
-    def route(self) -> str:
-        return f'{self.inner_proxy.url}__{self.outer_proxy.url}'
+    def route_info(self) -> str:
+        return f'{self.host}:{self.port} -> {self.inner_proxy} -> {self.outer_proxy}'
 
     @property
     async def ping(self) -> int:
@@ -61,7 +65,7 @@ class Tunnel:
                 async with client.get(resource, proxy=self.url, timeout=5) as response:
                     if response.status != 200:
                         return False
-        except (ClientError, TimeoutError):
+        except (ClientError, asyncio.TimeoutError):
             return False
         return True
 
@@ -71,7 +75,7 @@ class Tunnel:
             self.destroy_time = self.build_time + timedelta(seconds=lifetime)
             self.__destroy_task = asyncio.create_task(self.run_destruction_timer())
         server = pproxy.Server(f'http+socks4+socks5://0.0.0.0:{self.port}')
-        connection = pproxy.Connection(self.route)
+        connection = pproxy.Connection(f'{self.inner_proxy.url}__{self.outer_proxy.url}')
         try:
             self.server = await server.start_server({'rserver': [connection]})
         except OSError:
@@ -82,8 +86,8 @@ class Tunnel:
         if hasattr(self, 'server'):
             self.server.close()
             await self.server.wait_closed()
-            for socket in self.server.sockets:
-                socket.close()
+            for sock in self.server.sockets:
+                sock.close()
         if hasattr(self, '__destroy_task'):
             self.__destroy_task.cancel()
 
