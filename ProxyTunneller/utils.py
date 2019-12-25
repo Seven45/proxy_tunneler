@@ -7,6 +7,7 @@ from typing import List, TypeVar
 
 from aiohttp import ClientSession, ClientError, ServerConnectionError
 from aiosocksy.connector import ProxyConnector, ProxyClientRequest
+from loguru import logger
 
 T = TypeVar('T')
 
@@ -14,7 +15,11 @@ T = TypeVar('T')
 def get_ephemeral_port() -> int:
     port = 0
     while port < 49152:
-        temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        except OSError:
+            logger.warning('Too many tunnels is opened')
+            continue
         temp_socket.bind(('', 0))
         port = temp_socket.getsockname()[1]
         temp_socket.close()
