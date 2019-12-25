@@ -13,7 +13,7 @@ class TunnelGenerator:
     __outer_proxy_pool: List[Proxy]
     queue: Queue
     allow_only_invisible_tunnels: bool = True
-    tunnels_lifetime: int = 10*60
+    tunnels_lifetime: int = 5 * 60
 
     def __init__(self, queue: Queue, inner_proxy_pool: List[Proxy], outer_proxy_pool: List[Proxy]):
         self.__inner_proxy_pool = inner_proxy_pool

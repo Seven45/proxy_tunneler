@@ -14,10 +14,11 @@ T = TypeVar('T')
 def get_ephemeral_port() -> int:
     port = 0
     while port < 49152:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as temp_socket:
-            temp_socket.bind(('', 0))
-            temp_socket.listen(1)
-            port = temp_socket.getsockname()[1]
+        temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        temp_socket.bind(('', 0))
+        temp_socket.listen(1)
+        port = temp_socket.getsockname()[1]
+        temp_socket.close()
     return port
 
 
