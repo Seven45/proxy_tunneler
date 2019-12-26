@@ -88,10 +88,6 @@ class Tunnel:
         if hasattr(self, 'server'):
             self.server.close()
             await self.server.wait_closed()
-            for sock in self.server.sockets:
-                sock.close()
-        if hasattr(self, '__destroy_task'):
-            self.__destroy_task.cancel()
 
     async def run_destruction_timer(self):
         sleep_time = self.destroy_time - self.build_time
