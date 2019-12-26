@@ -1,4 +1,4 @@
 pproxy
 aiohttp
 aiosocksy
-loguru
+psutil

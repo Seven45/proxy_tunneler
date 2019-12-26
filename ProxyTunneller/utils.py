@@ -1,28 +1,23 @@
 import itertools
-import socket
+import random
 import time
 from asyncio import TimeoutError
 from operator import attrgetter
 from typing import List, TypeVar
 
+import psutil
 from aiohttp import ClientSession, ClientError, ServerConnectionError
 from aiosocksy.connector import ProxyConnector, ProxyClientRequest
-from loguru import logger
 
 T = TypeVar('T')
 
 
 def get_ephemeral_port() -> int:
-    port = 0
-    while port < 49152:
-        try:
-            temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        except OSError:
-            logger.warning('Too many tunnels is opened')
-            continue
-        temp_socket.bind(('', 0))
-        port = temp_socket.getsockname()[1]
-        temp_socket.close()
+    connections = psutil.net_connections('inet4')
+    used_ports = list(map(lambda conn: conn.laddr[1], connections))
+    port = used_ports[0]
+    while port in used_ports:
+        port = random.choice(range(49152, 65535))
     return port
 
 
