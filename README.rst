@@ -33,7 +33,7 @@ Create proxy tunnel
     from ProxyTunneller import Proxy, Tunnel
 
 
-    await def main():
+    async def main():
         inner_proxy = Proxy('http', '104.28.10.155', 80)
         outer_proxy = Proxy('socks5', '5.9.143.59', 3128)
         tunnel = Tunnel(inner_proxy, outer_proxy)
@@ -52,7 +52,7 @@ Generate tunnels from proxy-pool
     from ProxyTunneller import Proxy, TunnelGenerator
 
 
-    await def main():
+    async def main():
         inner_proxies = [
             Proxy('http', '104.28.10.145', port)
             for port in range(13010, 13030)
