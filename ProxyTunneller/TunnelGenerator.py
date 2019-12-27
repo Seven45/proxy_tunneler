@@ -33,6 +33,9 @@ class TunnelGenerator:
             else:
                 tunnel_is_correct: bool = await tunnel.is_available_to_resource('http://ifconfig.me/ip')
             if tunnel_is_correct:
-                await self.queue.put(tunnel)
+                if not self.queue.full():
+                    self.queue.put_nowait(tunnel)
+                else:
+                    await self.queue.join()
             else:
-                asyncio.create_task(tunnel.destroy())
+                await tunnel.destroy()

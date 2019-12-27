@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta
-from typing import Callable
+from typing import Callable, Optional
 
 import pproxy
 from aiohttp import ClientSession, ClientError, ServerConnectionError
@@ -21,8 +21,8 @@ class Tunnel:
     def __init__(self,
                  inner_proxy: Proxy,
                  outer_proxy: Proxy,
-                 port: int = None,
-                 verbose_func: Callable = pproxy.server.DUMMY):
+                 port: Optional[int] = None,
+                 verbose_func: Optional[Callable] = pproxy.server.DUMMY):
         if port is None:
             port = utils.get_ephemeral_port()
         self.port = port
@@ -92,4 +92,4 @@ class Tunnel:
     async def run_destruction_timer(self):
         sleep_time = self.destroy_time - self.build_time
         await asyncio.sleep(sleep_time.seconds)
-        asyncio.create_task(self.destroy())
+        await self.destroy()

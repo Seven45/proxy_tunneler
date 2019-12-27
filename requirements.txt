@@ -1,4 +1,3 @@
 pproxy
 aiohttp
 aiosocksy
-psutil

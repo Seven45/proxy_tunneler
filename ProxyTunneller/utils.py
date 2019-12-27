@@ -1,11 +1,10 @@
 import itertools
-import random
+import socket
 import time
 from asyncio import TimeoutError
 from operator import attrgetter
 from typing import List, TypeVar
 
-import psutil
 from aiohttp import ClientSession, ClientError, ServerConnectionError
 from aiosocksy.connector import ProxyConnector, ProxyClientRequest
 
@@ -13,11 +12,12 @@ T = TypeVar('T')
 
 
 def get_ephemeral_port() -> int:
-    connections = psutil.net_connections('inet4')
-    used_ports = list(map(lambda conn: conn.laddr[1], connections))
-    port = used_ports[0]
-    while port in used_ports:
-        port = random.choice(range(49152, 65535))
+    port = 0
+    while port < 49152:
+        temp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        temp_socket.bind(('', 0))
+        port = temp_socket.getsockname()[1]
+        temp_socket.close()
     return port
 
 
