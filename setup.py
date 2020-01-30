@@ -6,7 +6,7 @@ long_description = open(join(dirname(__file__), 'README.rst'), 'r').read()
 
 
 setup(name='ProxyTunneller',
-      version='0.3.8',
+      version='0.3.14',
       url='https://github.com/Seven45/ProxyTunneller',
       author='Dubrovin Semyon',
       author_email='seven45@mail.ru',

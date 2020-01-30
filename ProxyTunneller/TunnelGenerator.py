@@ -12,7 +12,8 @@ class TunnelGenerator:
     __inner_proxy_pool: List[Proxy]
     __outer_proxy_pool: List[Proxy]
     queue: Queue
-    allow_only_invisible_tunnels: bool = True
+    check_tunnels_for_invisibility: bool = False
+    check_tunnels_for_availability: bool = False
     tunnels_lifetime: int = 5 * 60
 
     def __init__(self, queue: Queue, inner_proxy_pool: List[Proxy], outer_proxy_pool: List[Proxy]):
@@ -28,14 +29,13 @@ class TunnelGenerator:
             inner_proxy = random.choice(self.__inner_proxy_pool)
             tunnel = Tunnel(inner_proxy, outer_proxy, verbose_func=verbose_func)
             await tunnel.build(self.tunnels_lifetime)
-            if self.allow_only_invisible_tunnels:
-                tunnel_is_correct: bool = await tunnel.is_invisible()
-            else:
-                tunnel_is_correct: bool = await tunnel.is_available_to_resource('http://ifconfig.me/ip')
+
+            tunnel_is_correct = True
+            if self.check_tunnels_for_invisibility:
+                tunnel_is_correct = await tunnel.is_invisible()
+            if self.check_tunnels_for_availability:
+                tunnel_is_correct = await tunnel.is_available_to_resource('http://ifconfig.me/ip')
             if tunnel_is_correct:
-                if not self.queue.full():
-                    self.queue.put_nowait(tunnel)
-                else:
-                    await self.queue.join()
+                await self.queue.put(tunnel)
             else:
                 await tunnel.destroy()

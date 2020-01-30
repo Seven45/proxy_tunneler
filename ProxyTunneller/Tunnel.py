@@ -16,7 +16,7 @@ class Tunnel:
     port: int
     inner_proxy: Proxy
     outer_proxy: Proxy
-    server: asyncio.AbstractServer
+    server: asyncio.base_events.Server
 
     def __init__(self,
                  inner_proxy: Proxy,
@@ -85,9 +85,8 @@ class Tunnel:
             await self.build(lifetime)
 
     async def destroy(self) -> None:
-        if hasattr(self, 'server'):
-            self.server.close()
-            await self.server.wait_closed()
+        self.server.close()
+        await self.server.wait_closed()
 
     async def run_destruction_timer(self):
         sleep_time = self.destroy_time - self.build_time
