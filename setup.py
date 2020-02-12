@@ -5,7 +5,8 @@ from setuptools import setup, find_packages
 long_description = open(join(dirname(__file__), 'README.rst'), 'r').read()
 
 
-setup(name='ProxyTunneller',
+setup(
+      name='ProxyTunneller',
       version='0.3.8',
       url='https://github.com/Seven45/ProxyTunneller',
       author='Dubrovin Semyon',
@@ -14,4 +15,5 @@ setup(name='ProxyTunneller',
       long_description=long_description,
       packages=find_packages(),
       install_requires=['pproxy', 'aiohttp', 'aiosocksy'],
-      python_requires='>=3.7')
+      python_requires='>=3.7'
+)

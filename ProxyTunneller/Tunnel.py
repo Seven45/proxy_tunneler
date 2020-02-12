@@ -10,19 +10,19 @@ from ProxyTunneller import Proxy, utils
 
 
 class Tunnel:
-    build_time: datetime
-    destroy_time: datetime
+    _build_time: datetime
+    _destroy_time: datetime
     __destroy_task: asyncio.Task
     port: int
     inner_proxy: Proxy
     outer_proxy: Proxy
-    server: asyncio.AbstractServer
+    process: asyncio.subprocess.Process
 
     def __init__(self,
                  inner_proxy: Proxy,
                  outer_proxy: Proxy,
                  port: Optional[int] = None,
-                 verbose_func: Optional[Callable] = pproxy.server.DUMMY):
+                 verbose_func: Callable = pproxy.server.DUMMY):
         if port is None:
             port = utils.get_ephemeral_port()
         self.port = port
@@ -34,7 +34,7 @@ class Tunnel:
         return self.route_info
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        asyncio.create_task(self.destroy())
+        self.destroy()
 
     @property
     def url(self) -> str:
@@ -71,25 +71,25 @@ class Tunnel:
         return True
 
     async def build(self, lifetime: int = 0) -> None:
-        self.build_time = datetime.now()
+        self._build_time = datetime.now()
         if lifetime > 0:
-            self.destroy_time = self.build_time + timedelta(seconds=lifetime)
+            self._destroy_time = self._build_time + timedelta(seconds=lifetime)
             self.__destroy_task = asyncio.create_task(self.run_destruction_timer())
-        server = pproxy.Server(f'http+socks4+socks5://0.0.0.0:{self.port}')
-        connection = pproxy.Connection(f'{self.inner_proxy.url}__{self.outer_proxy.url}')
-        try:
-            self.server = await server.start_server({'rserver': [connection],
-                                                     'verbose': self.verbose_func})
-        except OSError:
-            self.port = utils.get_ephemeral_port()
-            await self.build(lifetime)
+
+        cmd = f'python ' \
+              f'-m pproxy ' \
+              f'-l http+socks4+socks5://localhost:{self.port} ' \
+              f'-r {self.inner_proxy.url}__{self.outer_proxy.url} ' \
+              f'-vv'
+        self.process = await asyncio.subprocess.create_subprocess_shell(cmd,
+                                                                        stdout=None)
+        print(f'{self.route_info} created')
 
     async def destroy(self) -> None:
-        if hasattr(self, 'server'):
-            self.server.close()
-            await self.server.wait_closed()
+        self.process.terminate()
 
     async def run_destruction_timer(self):
-        sleep_time = self.destroy_time - self.build_time
+        sleep_time = self._destroy_time - self._build_time
         await asyncio.sleep(sleep_time.seconds)
         await self.destroy()
+        print(f'{self.route_info} killed')
